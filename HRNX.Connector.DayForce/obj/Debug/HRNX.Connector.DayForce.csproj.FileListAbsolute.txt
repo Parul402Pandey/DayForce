@@ -1,0 +1,9 @@
+C:\Users\Craterzone\HRNX.Connector.DayForce\HRNX.Connector.DayForce\bin\Debug\HRNX.Connector.DayForce.dll
+C:\Users\Craterzone\HRNX.Connector.DayForce\HRNX.Connector.DayForce\bin\Debug\HRNX.Connector.DayForce.pdb
+C:\Users\Craterzone\HRNX.Connector.DayForce\HRNX.Connector.DayForce\bin\Debug\Newtonsoft.Json.dll
+C:\Users\Craterzone\HRNX.Connector.DayForce\HRNX.Connector.DayForce\bin\Debug\Scribe.Core.ConnectorApi.dll
+C:\Users\Craterzone\HRNX.Connector.DayForce\HRNX.Connector.DayForce\obj\Debug\HRNX.Connector.DayForce.csproj.CoreCompileInputs.cache
+C:\Users\Craterzone\HRNX.Connector.DayForce\HRNX.Connector.DayForce\obj\Debug\HRNX.Connector.DayForce.csproj.CopyComplete
+C:\Users\Craterzone\HRNX.Connector.DayForce\HRNX.Connector.DayForce\obj\Debug\HRNX.Connector.DayForce.dll
+C:\Users\Craterzone\HRNX.Connector.DayForce\HRNX.Connector.DayForce\obj\Debug\HRNX.Connector.DayForce.pdb
+C:\Users\Craterzone\HRNX.Connector.DayForce\HRNX.Connector.DayForce\obj\Debug\HRNX.Connector.DayForce.csprojAssemblyReference.cache
