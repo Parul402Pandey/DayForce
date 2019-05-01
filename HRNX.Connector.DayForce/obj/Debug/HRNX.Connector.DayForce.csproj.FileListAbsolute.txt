@@ -6,4 +6,3 @@ C:\Users\Craterzone\HRNX.Connector.DayForce\HRNX.Connector.DayForce\obj\Debug\HR
 C:\Users\Craterzone\HRNX.Connector.DayForce\HRNX.Connector.DayForce\obj\Debug\HRNX.Connector.DayForce.csproj.CopyComplete
 C:\Users\Craterzone\HRNX.Connector.DayForce\HRNX.Connector.DayForce\obj\Debug\HRNX.Connector.DayForce.dll
 C:\Users\Craterzone\HRNX.Connector.DayForce\HRNX.Connector.DayForce\obj\Debug\HRNX.Connector.DayForce.pdb
-C:\Users\Craterzone\HRNX.Connector.DayForce\HRNX.Connector.DayForce\obj\Debug\HRNX.Connector.DayForce.csprojAssemblyReference.cache

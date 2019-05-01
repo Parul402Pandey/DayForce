@@ -120,7 +120,7 @@ namespace HRNX.Connector.DayForce.Connector
                     },
                       new EntryDefinition
                     {
-                        InputType=InputType.Text,
+                        InputType=InputType.Password,
                         IsRequired=true,
                         Label="Client Namespace",
                         PropertyName=ConstantUtils.clientNamespace

@@ -18,7 +18,7 @@ namespace HRNX.Connector.DayForce.Entities
 
         //Use to retrieve the Employee details according to context date as that were on that day or not
         [QuerySelectAttribute]
-        public DateTime? ContextDate { get; set; }
+        public DateTime ContextDate { get; set; }
         //ByDefault only basic information of employees has been access to get the more information retrieve 
         //by using expand parameters.
         [QuerySelectAttribute]

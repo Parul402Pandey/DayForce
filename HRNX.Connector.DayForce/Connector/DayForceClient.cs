@@ -158,6 +158,7 @@ namespace HRNX.Connector.DayForce.Connector
 
         public List<EmployeeDetails> GetEmployeeDetails(IDictionary<string, string> _connectionInfo, DayForceFilter filter)
         {
+            int count = 0;
             ServiceUtils service = new ServiceUtils();
             List<EmployeeDetails> employeeResponselist = new List<EmployeeDetails>();
             EmployeeDetails employeeDetails = new EmployeeDetails();
@@ -165,15 +166,71 @@ namespace HRNX.Connector.DayForce.Connector
             EmployeeDetailsBasicResponse employeeResponsedata = new EmployeeDetailsBasicResponse();
             List<string> fieldNames = new List<string>();
 
-
+            string completeUrl = string.Concat(BaseUrl, GetEmployeeDetailsUri);
             if (filter != null)
             {
-                if (String.IsNullOrEmpty(filter.value[0]))
+                for (int i = 0; i < filter.name.Count; i++)
                 {
-                    throw new Exception("Please specify value of Xrefcode to get Employee Details.");
+                    if(filter.name[i]== employeeDetails.XRefCode)
+                    {
+                        count=count++;
+                    }
                 }
+                if(count==0)
+                {
+                    throw new WebException("XRefCode required,please provide XRefCode");
+                }
+                for (int i = 0; i < filter.name.Count; i++)
+                {
+                   String Name = filter.name[i];
+                   String Value = filter.value[i];
+                    if (i == 0)
+                    {
+                        filterUrl = "?";
+                    }
+                    if (i == (filter.name.Count - 1))
+                    {
+                        if (filter.name[i] == "Employees.contextDate")
+                        {
 
-                string completeUrl = string.Concat(BaseUrl, GetEmployeeDetailsUri, filter.value[0]);
+                            string line = filter.value[i];
+                            DateTime dt = new DateTime();
+                            dt = Convert.ToDateTime(line);
+                            var date = dt.ToString("yyyy-MM-dd" + "T" + "HH:mm:ss");
+                            Value = date;
+                            filterUrl += Name + " = " + Value;
+                        }
+                        else
+                        {
+                            filterUrl += Name + " = " + Value;
+                        }
+                    }
+                    else
+                    {
+                        if (filter.name[i] == "Employees.contextDate")
+                        {
+
+                            string line = filter.value[i];
+                            DateTime dt = new DateTime();
+                            dt = Convert.ToDateTime(line);
+                            var date = dt.ToString("yyyy-MM-dd" + "T" + "HH:mm:ss");
+                            Value = date;
+                            filterUrl += Name + "=" + Value + "&";
+                        }
+                        else
+                        {
+                            filterUrl += Name + "=" + Value + "&";
+                        }
+                    }
+
+                }
+                filterUrl = String.Concat(completeUrl, filterUrl);
+                filterUrl = filterUrl.Replace("Employees.", " ");
+                filterUrl = filterUrl.Replace(" ", "");
+             //   completeUrl = filterUrl;
+
+
+                 completeUrl = string.Concat(BaseUrl, GetEmployeeDetailsUri, filterUrl);
 
                 HttpWebResponse response = service.HttpRequest(_connectionInfo, completeUrl, HttpMethods.GET.ToString(), null);
 
