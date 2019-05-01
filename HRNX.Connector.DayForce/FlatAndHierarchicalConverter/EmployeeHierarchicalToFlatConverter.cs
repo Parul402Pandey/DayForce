@@ -7,27 +7,27 @@ using System.Threading.Tasks;
 
 namespace HRNX.Connector.DayForce.FlatAndHierarchicalConverter
 {
-   public class EmployeeHierarchicalToFlatConverter
+    public class EmployeeHierarchicalToFlatConverter
     {
-      
+
         public static List<Employees> employeeHierarchicalToFlatConverter(EmployeeResponse employeeResponse)
         {
-          //  EmployeeResponse employeeEntities = new EmployeeResponse();
-            
+
+
             List<Employees> employeeEntity = new List<Employees>();
             Employees employees = new Employees();
-            // Datum employeeEntity = new Datum();
+
             if (employeeResponse != null)
             {
-                //employeeEntity=employeeResponse.Data.FirstOrDefault();
+
                 foreach (var employee in employeeResponse.Data)
                 {
-                    // employees.XRefCode = employeeResponse.Data.FirstOrDefault().XRefCode;
+
                     employees = new Employees();
 
                     employees.XRefCode = employee.XRefCode;
-                        employeeEntity.Add(employees);
-                   
+                    employeeEntity.Add(employees);
+
                 }
             }
 
@@ -36,7 +36,7 @@ namespace HRNX.Connector.DayForce.FlatAndHierarchicalConverter
         public static EmployeeDetails EmployeeDetailsHierarchicalToFlatConverter(EmployeeDetailsBasicResponse employeeDetailsResponse)
         {
             EmployeeDetails employeeEntity = new EmployeeDetails();
-            if(employeeDetailsResponse!=null)
+            if (employeeDetailsResponse != null)
             {
                 employeeEntity.BioExempt = employeeDetailsResponse.Data.BioExempt;
                 employeeEntity.BirthDate = employeeDetailsResponse.Data.BirthDate;
@@ -76,11 +76,11 @@ namespace HRNX.Connector.DayForce.FlatAndHierarchicalConverter
                 employeeEntity.FirstName = employeeDetailsResponse.Data.FirstName;
                 employeeEntity.LastName = employeeDetailsResponse.Data.LastName;
             }
-           
+
 
             return employeeEntity;
         }
-           
-        
+
+
     }
 }

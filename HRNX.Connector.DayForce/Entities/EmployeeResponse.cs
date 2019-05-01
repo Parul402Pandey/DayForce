@@ -6,11 +6,6 @@ using System.Threading.Tasks;
 
 namespace HRNX.Connector.DayForce.Entities
 {
-    //class EmployeeResponse
-    //{
-    //}
-
-
     public class EmployeeResponse
     {
         public List<Datum> Data { get; set; }

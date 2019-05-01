@@ -14,56 +14,53 @@ using HRNX.Connector.DayForce.Connector;
 
 namespace HRNX.Connector.DayForce.Connector
 {
- 
-        [ScribeConnector(
-       ConnectorSettings.ConnectorTypeId,
-       ConnectorSettings.Name,
-       ConnectorSettings.Description,
-       typeof(Connector),
-       StandardConnectorSettings.SettingsUITypeName,
-       StandardConnectorSettings.SettingsUIVersion,
-       StandardConnectorSettings.ConnectionUITypeName,
-       StandardConnectorSettings.ConnectionUIVersion,
-       StandardConnectorSettings.XapFileName,
-       new[] { "Scribe.IS.Source", "Scribe.IS.Target", "Scribe.IS2.Source", "Scribe.IS2.Target" },
-       ConnectorSettings.SupportsCloud, ConnectorSettings.ConnectorVersion)]
-        public  class Connector : IConnector
-        {
+
+    [ScribeConnector(
+   ConnectorSettings.ConnectorTypeId,
+   ConnectorSettings.Name,
+   ConnectorSettings.Description,
+   typeof(Connector),
+   StandardConnectorSettings.SettingsUITypeName,
+   StandardConnectorSettings.SettingsUIVersion,
+   StandardConnectorSettings.ConnectionUITypeName,
+   StandardConnectorSettings.ConnectionUIVersion,
+   StandardConnectorSettings.XapFileName,
+   new[] { "Scribe.IS.Source", "Scribe.IS.Target", "Scribe.IS2.Source", "Scribe.IS2.Target" },
+   ConnectorSettings.SupportsCloud, ConnectorSettings.ConnectorVersion)]
+    public class Connector : IConnector
+    {
         internal IDictionary<string, string> _connectionInfo = new Dictionary<string, string>();
-       // internal String Username;
-      //  internal String password;
-      //  internal String clientnamespace;
         internal MetaDataProvider metadata;
         internal QueryProcessor QueryProcessor { get; set; }
         internal OperationProcessor OperationProcessor { get; set; }
         public Guid ConnectorTypeId
-            {
-                get { return new Guid(ConnectorSettings.ConnectorTypeId); }
-            }
-            public bool IsConnected
-            {
-                get;
-                set;
-            }
-            public void Connect(IDictionary<string, string> properties)
-            {
+        {
+            get { return new Guid(ConnectorSettings.ConnectorTypeId); }
+        }
+        public bool IsConnected
+        {
+            get;
+            set;
+        }
+        public void Connect(IDictionary<string, string> properties)
+        {
             _connectionInfo[ConstantUtils.Username] = properties[ConstantUtils.Username];
             _connectionInfo[ConstantUtils.Password] = properties[ConstantUtils.Password];
             _connectionInfo[ConstantUtils.clientNamespace] = properties[ConstantUtils.clientNamespace];
             this.QueryProcessor = new QueryProcessor(_connectionInfo);
             this.OperationProcessor = new OperationProcessor(_connectionInfo);
             IsConnected = true;
-            }
-            public void Disconnect()
-            {
-                IsConnected = false;
-            }
-            public MethodResult ExecuteMethod(MethodInput input)
-            {
-                throw new NotImplementedException();
-            }
-            public OperationResult ExecuteOperation(OperationInput input)
-            {
+        }
+        public void Disconnect()
+        {
+            IsConnected = false;
+        }
+        public MethodResult ExecuteMethod(MethodInput input)
+        {
+            throw new NotImplementedException();
+        }
+        public OperationResult ExecuteOperation(OperationInput input)
+        {
             OperationResult operationResult = null;
 
             try
@@ -78,8 +75,8 @@ namespace HRNX.Connector.DayForce.Connector
             }
             return operationResult;
         }
-            public IEnumerable<DataEntity> ExecuteQuery(Query query)
-            {
+        public IEnumerable<DataEntity> ExecuteQuery(Query query)
+        {
             IEnumerable<DataEntity> entities = null;
             try
             {
@@ -93,12 +90,12 @@ namespace HRNX.Connector.DayForce.Connector
             return entities;
 
         }
-            public IMetadataProvider GetMetadataProvider()
-            {
-                return metadata = new MetaDataProvider();
-            }
-            public string PreConnect(IDictionary<string, string> properties)
-            {
+        public IMetadataProvider GetMetadataProvider()
+        {
+            return metadata = new MetaDataProvider();
+        }
+        public string PreConnect(IDictionary<string, string> properties)
+        {
             var form = new FormDefinition
             {
                 CompanyName = "DayForce Portal",
@@ -125,7 +122,7 @@ namespace HRNX.Connector.DayForce.Connector
                     {
                         InputType=InputType.Text,
                         IsRequired=true,
-                        Label="clientNamespace",
+                        Label="Client Namespace",
                         PropertyName=ConstantUtils.clientNamespace
                     }
                }
@@ -138,4 +135,4 @@ namespace HRNX.Connector.DayForce.Connector
         }
 
     }
-    }
+}

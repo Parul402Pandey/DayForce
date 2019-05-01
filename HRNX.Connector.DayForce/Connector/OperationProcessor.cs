@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace HRNX.Connector.DayForce.Connector
 {
-   public  class OperationProcessor
+    public class OperationProcessor
     {
         private readonly IDictionary<string, string> _connectionInfo;
         private DayForceClient _dayforceClient = new DayForceClient();
@@ -35,20 +35,13 @@ namespace HRNX.Connector.DayForce.Connector
                         var returnEntity = new DataEntity();
                         try
                         {
-                           
 
-                             if (scribeEntity.ObjectDefinitionFullName == Utils.ConstantUtils.EmployeeCreateFlat_Entity)
+
+                            if (scribeEntity.ObjectDefinitionFullName == Utils.ConstantUtils.EmployeeCreateFlat_Entity)
                             {
                                 var candidate = ScribeUtils.EntityToObject<EmployeeCreateFlat>(scribeEntity);
                                 _dayforceClient.CreateEmployee(_connectionInfo, candidate);
-                             //   List<EmployeeCreateFlat> lst = new List<EmployeeCreateFlat>();
-                             //   lst.Add(_dayforceClient.responseObject);
-                             //   IEnumerable<EmployeeCreateFlat> enumerable = lst;
-                                //   IEnumerable<CandidateResponse> enumerable =new[] { _greenhouseClient.responseObject };
-
-                              //  var data = ScribeUtils.ToDataEntity<EmployeeCreateFlat>(enumerable, "Candidates");
-                              //  returnEntity = data.FirstOrDefault();
-
+                               
 
                             }
 
@@ -73,7 +66,7 @@ namespace HRNX.Connector.DayForce.Connector
                         }
                     }
                     break;
-               
+
             }
 
             //Completed the requests, hand back the results: 

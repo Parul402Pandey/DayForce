@@ -69,6 +69,7 @@
     <Compile Include="Utils\ConstantUtils.cs" />
     <Compile Include="Utils\HttpMethods.cs" />
     <Compile Include="Utils\ScribeUtils.cs" />
+    <Compile Include="Utils\ServiceUtils.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="bin\Debug\HRNX.Connector.DayForce.dll" />

@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace HRNX.Connector.DayForce.Connector
 {
-   public class QueryProcessor
+    public class QueryProcessor
     {
         private readonly IDictionary<string, string> _connectionInfo;
         private DayForceClient _dayforceClient = new DayForceClient();
@@ -27,17 +27,17 @@ namespace HRNX.Connector.DayForce.Connector
             {
                 filter = ScribeUtils.CreateFilter(query);
             }
-          
+
 
             switch (entityName)
             {
-               
-                
+
+
                 case ConstantUtils.Employee_Entity:
-                        List<Employees> employeeEntity = new List<Employees>();
-                        employeeEntity = _dayforceClient.GetEmployees(_connectionInfo, filter);
-                        results = ScribeUtils.ToDataEntities<Employees>(employeeEntity);
-                    
+                    List<Employees> employeeEntity = new List<Employees>();
+                    employeeEntity = _dayforceClient.GetEmployees(_connectionInfo, filter);
+                    results = ScribeUtils.ToDataEntities<Employees>(employeeEntity);
+
                     break;
                 case ConstantUtils.EmployeeDetails_Entity:
                     List<EmployeeDetails> employeeDetailsEntity = new List<EmployeeDetails>();

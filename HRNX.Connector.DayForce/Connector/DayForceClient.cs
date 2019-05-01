@@ -10,7 +10,8 @@ using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
-using HRNX.Connector.DayForce.FlatAndHierarchicalConverter;  
+using HRNX.Connector.DayForce.FlatAndHierarchicalConverter;
+using HRNX.Connector.DayForce.Utils;
 
 namespace HRNX.Connector.DayForce.Connector
 {
@@ -23,111 +24,27 @@ namespace HRNX.Connector.DayForce.Connector
         private const string CreateEmployeeUri = "/Employees";
         public EmployeeCreateFlat responseObject;
         public EmployeeCreate responseValue;
-        public List<Item> employeeList { get; set;}
+        public List<Item> employeeList { get; set; }
         public List<Item1> employeeList1 { get; set; }
         public List<Item2> employeeList2 { get; set; }
         public List<Item3> employeeList3 { get; set; }
         public List<Item4> employeeList4 { get; set; }
         public string filterUrl;
         #endregion
-        public HttpWebResponse HttpRequest(IDictionary<string,string> connection,string requestUrl,string methodName,string requestContent)
-        {
-            HttpWebResponse response = null;
-            try
-            {
-                //create http request Url
-                HttpWebRequest httprequest = WebRequest.Create(requestUrl) as HttpWebRequest;
-                String str = connection[ConstantUtils.Username];
-                String str1 = connection[ConstantUtils.Password];
-                str = String.Concat(str, str1);
-                byte[] bytes = System.Text.Encoding.UTF8.GetBytes(str);
-
-                //  string data = System.Convert.ToBase64String(bytes);
-                string data = "REZXU1Rlc3Q6REZXU1Rlc3Q=";
-
-                if (!string.IsNullOrEmpty(str))
-                {
-                    httprequest.Headers.Add("Authorization", string.Format("Basic {0}", data));
-                }
-                httprequest.Method = methodName;
-                httprequest.ContentType = "application/json";
-                if(requestUrl== "https://usconfigr56.dayforcehcm.com/Api/ddn/V1/Employees")
-                {
-                    httprequest.Headers.Add("isValidateOnly", "true");
-                }
-              //  httprequest.Headers.Add("Connection", "keep-alive");
-              //  httprequest.Headers.Add("accept-encoding", "gzip, deflate");
-              //  httprequest.Headers.Add("Host", "usconfigr56.dayforcehcm.com");
-              //  httprequest.Headers.Add("Postman-Token", "a682b497-c7e2-4460-8e22-f39f9222e915");
-              //  httprequest.Headers.Add("Cache-Control", "no-cache");
-              //  httprequest.Headers.Add("Accept", "*/*");
-              //  httprequest.Headers.Add("User-Agent", "PostmanRuntime/7.11.0");
-                if (!string.IsNullOrEmpty(requestContent))
-                {
-                    Byte[] bt = System.Text.Encoding.UTF8.GetBytes(requestContent);
-                    Stream st = httprequest.GetRequestStream();
-                    st.Write(bt, 0, bt.Length);
-                    st.Close();
-                }
-                response = httprequest.GetResponse() as HttpWebResponse;
-                return response;
-            }
-            catch(WebException e)
-            {
-                using (WebResponse resp = e.Response)
-                {
-                    HttpWebResponse httpResponse = (HttpWebResponse)resp;
-                    using (Stream data = resp.GetResponseStream())
-                    using (var reader = new StreamReader(data))
-                    {
-                        string text = reader.ReadToEnd();
-                        if((httpResponse.StatusCode==HttpStatusCode.NotFound)&&(methodName==HttpMethods.GET.ToString()))
-                            {
-                            Stream receiveStream = httpResponse.GetResponseStream();
-                            Encoding encode = System.Text.Encoding.GetEncoding("utf-8");
-
-                            var newData = (JObject)JsonConvert.DeserializeObject(text);
-                            string textMessage = newData["message"].Value<string>();
-                            if (textMessage == "Resource not found")
-                            {
-                                return null;
-                            }
-                        }
-                        if((httpResponse.StatusCode==HttpStatusCode.BadRequest)&&(methodName==HttpMethods.POST.ToString()))
-                        {
-                            throw new WebException("Request is malformed. Correct and resubmit.");
-                        }
-                        if ((httpResponse.StatusCode == HttpStatusCode.BadRequest) && (methodName == HttpMethods.GET.ToString()))
-                        {
-                            throw new WebException("Request is malformed. Correct and resubmit.");
-                        }
-                        if ((httpResponse.StatusCode == HttpStatusCode.InternalServerError) && (methodName == HttpMethods.POST.ToString()))
-                        {
-                            throw new WebException("An Unexpected Server Error Occured");
-                        }
-                        if ((httpResponse.StatusCode == HttpStatusCode.InternalServerError) && (methodName == HttpMethods.GET.ToString()))
-                        {
-                            throw new WebException("An Unexpected Server Error Occured");
-                        }
-
-                        throw new WebException("Unable to post/get the request to DayForce Api:" + text, e.InnerException);
-                    }
-                }
-            }
-            catch (Exception e)
-            {
-                throw new WebException("Unable to post/get the request to DayForce api :" + e.Message, e.InnerException);
-            }
-        }
-
+        /// <summary>
+        /// Provide all list of Employee Xrefcodes 
+        /// </summary>
+        /// <param name="_connectionInfo"></param>
+        /// <param name="filter"></param>
+        /// <returns></returns>
         public List<Employees> GetEmployees(IDictionary<string, string> _connectionInfo, DayForceFilter filter)
         {
-           string Name,Value,Comparison,Logical;
-         
+            string Name, Value;
+            ServiceUtils service = new ServiceUtils();
             List<Datum> employeeResponselist = new List<Datum>();
             Datum employeeXrefCode = new Datum();
             EmployeeResponse employeeResponsedata;
-           // string completeUrl = "https://usconfigr56.dayforcehcm.com/Api/ddn/V1/Employees";
+
 
 
             List<string> fieldNames = new List<string>();
@@ -136,9 +53,9 @@ namespace HRNX.Connector.DayForce.Connector
 
             if (filter == null)
             {
-                string completeUrl = String.Concat(BaseUrl,GetEmployeesUri);
+                string completeUrl = String.Concat(BaseUrl, GetEmployeesUri);
 
-                HttpWebResponse response = this.HttpRequest(_connectionInfo, completeUrl, HttpMethods.GET.ToString(), null);
+                HttpWebResponse response = service.HttpRequest(_connectionInfo, completeUrl, HttpMethods.GET.ToString(), null);
 
                 if (response != null && response.StatusCode == HttpStatusCode.OK)
                 {
@@ -146,7 +63,7 @@ namespace HRNX.Connector.DayForce.Connector
                     using (var reader = new System.IO.StreamReader(response.GetResponseStream(), encoding))
                     {
                         string responseText = reader.ReadToEnd();
-                         employeeResponsedata = JsonConvert.DeserializeObject<EmployeeResponse>(responseText);
+                        employeeResponsedata = JsonConvert.DeserializeObject<EmployeeResponse>(responseText);
 
                     }
 
@@ -154,30 +71,31 @@ namespace HRNX.Connector.DayForce.Connector
 
                     employees = HRNX.Connector.DayForce.FlatAndHierarchicalConverter.EmployeeHierarchicalToFlatConverter.employeeHierarchicalToFlatConverter(employeeResponsedata);
 
-                     
-                    
+
+
                 }
             }
-            if(filter!=null)
+            if (filter != null)
             {
                 String completeUrl = String.Concat(BaseUrl, GetEmployeesUri);
-                for (int i=0;i<filter.name.Count;i++)
+                for (int i = 0; i < filter.name.Count; i++)
                 {
-                     Name=filter.name[i];
-                     Value = filter.value[i];
-                    if(i==0)
+                    Name = filter.name[i];
+                    Value = filter.value[i];
+                    if (i == 0)
                     {
-                        filterUrl= "?";
+                        filterUrl = "?";
                     }
-                    if(i==(filter.name.Count-1))
+                    if (i == (filter.name.Count - 1))
                     {
                         if (filter.name[i] == "Employees.contextDate" || filter.name[i] == "Employees.filterHireStartDate" || filter.name[i] == "filterHireEndDate" || filter.name[i] == " filterTerminationStartDate" || filter.name[i] == "filterTerminationEndDate" || filter.name[i] == " filterUpdatedStartDate" || filter.name[i] == "filterUpdatedEndDate")
                         {
+
                             string line = filter.value[i];
-                            string[] wordArray = line.Split('-');
-                            var reverse=wordArray.Reverse();
-                            string joinValue;
-                            Value=String.Join("-",reverse);
+                            DateTime dt = new DateTime();
+                            dt = Convert.ToDateTime(line);
+                            var date = dt.ToString("yyyy-MM-dd" + "T" + "HH:mm:ss");
+                            Value = date;
                             filterUrl += Name + " = " + Value;
                         }
                         else
@@ -189,11 +107,12 @@ namespace HRNX.Connector.DayForce.Connector
                     {
                         if (filter.name[i] == "Employees.contextDate" || filter.name[i] == "Employees.filterHireStartDate" || filter.name[i] == "filterHireEndDate" || filter.name[i] == " filterTerminationStartDate" || filter.name[i] == "filterTerminationEndDate" || filter.name[i] == " filterUpdatedStartDate" || filter.name[i] == "filterUpdatedEndDate")
                         {
+
                             string line = filter.value[i];
-                            string[] wordArray = line.Split('-');
-                            var reverse = wordArray.Reverse();
-                            string joinValue;
-                            Value = String.Join("-", reverse);
+                            DateTime dt = new DateTime();
+                            dt = Convert.ToDateTime(line);
+                            var date = dt.ToString("yyyy-MM-dd" + "T" + "HH:mm:ss");
+                            Value = date;
                             filterUrl += Name + "=" + Value + "&";
                         }
                         else
@@ -201,13 +120,13 @@ namespace HRNX.Connector.DayForce.Connector
                             filterUrl += Name + "=" + Value + "&";
                         }
                     }
-                    
+
                 }
                 filterUrl = String.Concat(completeUrl, filterUrl);
-                filterUrl=filterUrl.Replace("Employees."," ");
+                filterUrl = filterUrl.Replace("Employees.", " ");
                 filterUrl = filterUrl.Replace(" ", "");
                 completeUrl = filterUrl;
-                HttpWebResponse response = this.HttpRequest(_connectionInfo, completeUrl, HttpMethods.GET.ToString(), null);
+                HttpWebResponse response = service.HttpRequest(_connectionInfo, completeUrl, HttpMethods.GET.ToString(), null);
 
                 if (response != null && response.StatusCode == HttpStatusCode.OK)
                 {
@@ -230,30 +149,33 @@ namespace HRNX.Connector.DayForce.Connector
             }
             return employees;
         }
-        //GetEmployeeDetails() use to retrieve employee detail on the basis of XRefcode
+        /// <summary>
+        /// Use to Get Employee Details on the basis of XRefcode
+        /// </summary>
+        /// <param name="_connectionInfo"></param>
+        /// <param name="filter"></param>
+        /// <returns></returns>
+
         public List<EmployeeDetails> GetEmployeeDetails(IDictionary<string, string> _connectionInfo, DayForceFilter filter)
         {
-
+            ServiceUtils service = new ServiceUtils();
             List<EmployeeDetails> employeeResponselist = new List<EmployeeDetails>();
             EmployeeDetails employeeDetails = new EmployeeDetails();
-           
-            EmployeeDetailsBasicResponse employeeResponsedata= new EmployeeDetailsBasicResponse();
-         //   string completeUrl = "https://usconfigr56.dayforcehcm.com/Api/ddn/V1/Employees/42199";
 
-
+            EmployeeDetailsBasicResponse employeeResponsedata = new EmployeeDetailsBasicResponse();
             List<string> fieldNames = new List<string>();
 
 
             if (filter != null)
             {
-                if(String.IsNullOrEmpty(filter.value[0]))
+                if (String.IsNullOrEmpty(filter.value[0]))
                 {
                     throw new Exception("Please specify value of Xrefcode to get Employee Details.");
                 }
-               
-                string completeUrl = string.Concat(BaseUrl,GetEmployeeDetailsUri,filter.value[0]);
 
-                HttpWebResponse response = this.HttpRequest(_connectionInfo, completeUrl, HttpMethods.GET.ToString(), null);
+                string completeUrl = string.Concat(BaseUrl, GetEmployeeDetailsUri, filter.value[0]);
+
+                HttpWebResponse response = service.HttpRequest(_connectionInfo, completeUrl, HttpMethods.GET.ToString(), null);
 
                 if (response != null && response.StatusCode == HttpStatusCode.OK)
                 {
@@ -269,24 +191,31 @@ namespace HRNX.Connector.DayForce.Connector
 
                     employeeResponselist.Add(employeeDetails);
                 }
-             
+
             }
-            if(filter==null)
+            if (filter == null)
             {
                 throw new WebException("Please sepecify the Value of XrefCode");
             }
             return employeeResponselist;
         }
+        /// <summary>
+        /// Use to create an Employee on Scribe with required details
+        /// </summary>
+        /// <param name="_connectionInfo"></param>
+        /// <param name="employee"></param>
+        /// <returns></returns>
+
         public string CreateEmployee(IDictionary<string, string> _connectionInfo, EmployeeCreateFlat employee)
         {
-            string completeUrl = string.Concat(BaseUrl,CreateEmployeeUri);
-
+            string completeUrl = string.Concat(BaseUrl, CreateEmployeeUri);
+            ServiceUtils service = new ServiceUtils();
 
             EmployeeCreate employeeRequest = new EmployeeCreate();
             employeeRequest.FirstName = employee.FirstName;
             employeeRequest.LastName = employee.LastName;
             employeeRequest.XRefCode = employee.XRefCode;
-           employeeRequest.BioExempt = employee.BioExempt;
+            employeeRequest.BioExempt = employee.BioExempt;
             employeeRequest.BirthDate = employee.BirthDate;
             employeeRequest.Gender = employee.Gender;
             employeeRequest.HireDate = employee.HireDate;
@@ -296,7 +225,7 @@ namespace HRNX.Connector.DayForce.Connector
             employeeRequest.SendFirstTimeAccessEmail = employee.SendFirstTimeAccessEmail;
             employeeRequest.FirstTimeAccessEmailSentCount = employee.FirstTimeAccessEmailSentCount;
             employeeRequest.FirstTimeAccessVerificationAttempts = employee.FirstTimeAccessVerificationAttempts;
-            employeeRequest.Culture= new CultureFirst();
+            employeeRequest.Culture = new CultureFirst();
             employeeRequest.Culture.XRefCode = employee.CultureFirstXRefCode;
             employeeRequest.Addresses = new Addresses();
             employeeRequest.Contacts = new Contacts();
@@ -306,15 +235,15 @@ namespace HRNX.Connector.DayForce.Connector
 
 
 
-            if (!String.IsNullOrEmpty(employee.Address1)|| !String.IsNullOrEmpty(employee.City)|| !String.IsNullOrEmpty(employee.PostalCode)||employee.EffectiveStart == default(DateTime)|| !String.IsNullOrEmpty(employee.CountryXRefCode)|| !String.IsNullOrEmpty(employee.StateXRefCode)|| !String.IsNullOrEmpty(employee.ContactinformationtypeXRefCode))
+            if (!String.IsNullOrEmpty(employee.Address1) || !String.IsNullOrEmpty(employee.City) || !String.IsNullOrEmpty(employee.PostalCode) || employee.EffectiveStart == default(DateTime) || !String.IsNullOrEmpty(employee.CountryXRefCode) || !String.IsNullOrEmpty(employee.StateXRefCode) || !String.IsNullOrEmpty(employee.ContactinformationtypeXRefCode))
             {
-               
+
                 employeeRequest.Addresses.Items = new List<Item>();
                 Item item = new Item();
-                 item.Address1 = employee.Address1;
+                item.Address1 = employee.Address1;
                 item.City = employee.City;
                 item.PostalCode = employee.PostalCode;
-                 item.EffectiveStart = employee.EffectiveStart;
+                item.EffectiveStart = employee.EffectiveStart;
                 item.Country = new Country();
                 item.Country.XRefCode = employee.CountryXRefCode;
                 item.State = new State();
@@ -324,10 +253,10 @@ namespace HRNX.Connector.DayForce.Connector
 
                 employeeRequest.Addresses.Items.Add(item);
 
-                }
-               if (!String.IsNullOrEmpty(employee.Contactinformationtype1XRefCode) || !String.IsNullOrEmpty(employee.ContactNumber) || employee.Item1EffectiveStart == default(DateTime) || !String.IsNullOrEmpty(employee.Country1XRefCode)|| !String.IsNullOrEmpty(employee.Contactinformationtype1XRefCode)||employee.ShowRejectedWarning==true||employee.IsForSystemCommunications==true||employee.IsPreferredContactMethod==true||employee.NumberOfVerificationRequests>0)
+            }
+            if (!String.IsNullOrEmpty(employee.Contactinformationtype1XRefCode) || !String.IsNullOrEmpty(employee.ContactNumber) || employee.Item1EffectiveStart == default(DateTime) || !String.IsNullOrEmpty(employee.Country1XRefCode) || !String.IsNullOrEmpty(employee.Contactinformationtype1XRefCode) || employee.ShowRejectedWarning == true || employee.IsForSystemCommunications == true || employee.IsPreferredContactMethod == true || employee.NumberOfVerificationRequests > 0)
 
-                 {
+            {
                 employeeRequest.Contacts.Items = new List<Item1>();
                 Item1 item1 = new Item1();
                 item1.ContactInformationType = new Contactinformationtype1();
@@ -364,21 +293,21 @@ namespace HRNX.Connector.DayForce.Connector
                 employeeRequest.EmploymentStatuses.Items.Add(item2);
 
             }
-             if (!String.IsNullOrEmpty(employee.RoleXRefCode) ||employee.RolesEffectiveStart== default(DateTime)|| employee.isDefault == true)
+            if (!String.IsNullOrEmpty(employee.RoleXRefCode) || employee.RolesEffectiveStart == default(DateTime) || employee.isDefault == true)
 
-          {
+            {
                 employeeRequest.Roles.Items = new List<Item3>();
                 Item3 item3 = new Item3();
                 item3.Role = new Role();
                 item3.Role.XRefCode = employee.RoleXRefCode;
                 item3.EffectiveStart = employee.RolesEffectiveStart;
-                 item3.isDefault = employee.isDefault;
+                item3.isDefault = employee.isDefault;
                 employeeRequest.Roles.Items.Add(item3);
 
             }
-              if (!String.IsNullOrEmpty(employee.DepartmentXRefCode) || !String.IsNullOrEmpty(employee.JobXRefCode) || !String.IsNullOrEmpty(employee.LocationXRefCode) || employee.WorkassignmentsEffectiveStart == default(DateTime) || employee.IsPAPrimaryWorkSite == true|| employee.IsPrimary == true|| employee.IsVirtual == true|| !String.IsNullOrEmpty(employee.Employmentstatusreason1XrefCode))
+            if (!String.IsNullOrEmpty(employee.DepartmentXRefCode) || !String.IsNullOrEmpty(employee.JobXRefCode) || !String.IsNullOrEmpty(employee.LocationXRefCode) || employee.WorkassignmentsEffectiveStart == default(DateTime) || employee.IsPAPrimaryWorkSite == true || employee.IsPrimary == true || employee.IsVirtual == true || !String.IsNullOrEmpty(employee.Employmentstatusreason1XrefCode))
 
-              {
+            {
 
                 employeeRequest.WorkAssignments.Items = new List<Item4>();
                 Item4 item4 = new Item4();
@@ -408,8 +337,8 @@ namespace HRNX.Connector.DayForce.Connector
                  }
                 );
 
-            
-            HttpWebResponse response = this.HttpRequest(_connectionInfo, completeUrl, HttpMethods.POST.ToString(), employeeJsonContent);
+
+            HttpWebResponse response = service.HttpRequest(_connectionInfo, completeUrl, HttpMethods.POST.ToString(), employeeJsonContent);
 
             try
             {
@@ -419,27 +348,22 @@ namespace HRNX.Connector.DayForce.Connector
                     using (var reader = new System.IO.StreamReader(response.GetResponseStream(), encoding))
                     {
                         var resp = reader.ReadToEnd();
-                        //  responseValue = JsonConvert.DeserializeObject<EmployeeCreate>(resp);
-                        // this.responseObject = EmployeeHierarchicalToFlatConverter(responseValue);
-
-
                         return "Ok";
 
-                        //   return responseObject;
                     }
-                   
+
                 }
-               else if ((response.StatusCode == HttpStatusCode.BadRequest))
+                else if ((response.StatusCode == HttpStatusCode.BadRequest))
                 {
-                    
-                    
-                        
-                        Stream receiveStream = response.GetResponseStream();
-                        var reader = new StreamReader(receiveStream);
-                        string text = reader.ReadToEnd();
-                        var newData = (JObject)JsonConvert.DeserializeObject(text);
-                        string textMessage = newData["message"].Value<string>();
-                        throw new WebException("Request is malformed. Correct and resubmit.");
+
+
+
+                    Stream receiveStream = response.GetResponseStream();
+                    var reader = new StreamReader(receiveStream);
+                    string text = reader.ReadToEnd();
+                    var newData = (JObject)JsonConvert.DeserializeObject(text);
+                    string textMessage = newData["message"].Value<string>();
+                    throw new WebException("Request is malformed. Correct and resubmit.");
 
                 }
                 else if ((response.StatusCode == HttpStatusCode.InternalServerError))
@@ -458,7 +382,8 @@ namespace HRNX.Connector.DayForce.Connector
                 }
                 else
                 {
-                    throw new WebException("Unable to Create this information for DayForce");                }
+                    throw new WebException("Unable to Create this information for DayForce");
+                }
             }
             catch (WebException ex)
             {

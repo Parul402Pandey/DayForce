@@ -174,12 +174,6 @@ namespace HRNX.Connector.DayForce.Utils
                         field.GetValue(entity, null));
                 }
 
-                //if (entity. == "CustomFieldValue")
-                //{
-
-                //}
-
-                //Hand back the completed object: 
                 yield return dataEntity.ToDataEntity();
             }
         }
