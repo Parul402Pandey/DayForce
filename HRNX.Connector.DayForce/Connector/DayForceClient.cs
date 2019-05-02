@@ -11,7 +11,8 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using HRNX.Connector.DayForce.FlatAndHierarchicalConverter;
-using HRNX.Connector.DayForce.Utils;
+
+
 
 namespace HRNX.Connector.DayForce.Connector
 {
@@ -24,12 +25,9 @@ namespace HRNX.Connector.DayForce.Connector
         private const string CreateEmployeeUri = "/Employees";
         public EmployeeCreateFlat responseObject;
         public EmployeeCreate responseValue;
-        public List<Item> employeeList { get; set; }
-        public List<Item1> employeeList1 { get; set; }
-        public List<Item2> employeeList2 { get; set; }
-        public List<Item3> employeeList3 { get; set; }
-        public List<Item4> employeeList4 { get; set; }
-        public string filterUrl;
+        public ServiceUtils service = new ServiceUtils();
+        public string filterUrl,Name,Value,completeUrl;
+        public  static int count = 0;
         #endregion
         /// <summary>
         /// Provide all list of Employee Xrefcodes 
@@ -39,17 +37,8 @@ namespace HRNX.Connector.DayForce.Connector
         /// <returns></returns>
         public List<Employees> GetEmployees(IDictionary<string, string> _connectionInfo, DayForceFilter filter)
         {
-            string Name, Value;
-            ServiceUtils service = new ServiceUtils();
-            List<Datum> employeeResponselist = new List<Datum>();
-            Datum employeeXrefCode = new Datum();
-            EmployeeResponse employeeResponsedata;
-
-
-
-            List<string> fieldNames = new List<string>();
-
-            List<Employees> employees = new List<Employees>();
+            EmployeeResponse employeeResponsedata=null;
+            List<Employees> employees= new List<Employees>(); 
 
             if (filter == null)
             {
@@ -65,13 +54,8 @@ namespace HRNX.Connector.DayForce.Connector
                         string responseText = reader.ReadToEnd();
                         employeeResponsedata = JsonConvert.DeserializeObject<EmployeeResponse>(responseText);
 
-                    }
-
-
-
-                    employees = HRNX.Connector.DayForce.FlatAndHierarchicalConverter.EmployeeHierarchicalToFlatConverter.employeeHierarchicalToFlatConverter(employeeResponsedata);
-
-
+                    } 
+                    employees =EmployeeHierarchicalToFlatConverter.employeeHierarchicalToFlatConverter(employeeResponsedata);
 
                 }
             }
@@ -137,12 +121,7 @@ namespace HRNX.Connector.DayForce.Connector
                         employeeResponsedata = JsonConvert.DeserializeObject<EmployeeResponse>(responseText);
 
                     }
-
-
-
-                    employees = HRNX.Connector.DayForce.FlatAndHierarchicalConverter.EmployeeHierarchicalToFlatConverter.employeeHierarchicalToFlatConverter(employeeResponsedata);
-
-
+                    employees =EmployeeHierarchicalToFlatConverter.employeeHierarchicalToFlatConverter(employeeResponsedata);
 
                 }
 
@@ -158,22 +137,18 @@ namespace HRNX.Connector.DayForce.Connector
 
         public List<EmployeeDetails> GetEmployeeDetails(IDictionary<string, string> _connectionInfo, DayForceFilter filter)
         {
-            int count = 0;
-            ServiceUtils service = new ServiceUtils();
+           
             List<EmployeeDetails> employeeResponselist = new List<EmployeeDetails>();
             EmployeeDetails employeeDetails = new EmployeeDetails();
-
             EmployeeDetailsBasicResponse employeeResponsedata = new EmployeeDetailsBasicResponse();
-            List<string> fieldNames = new List<string>();
-
-            string completeUrl = string.Concat(BaseUrl, GetEmployeeDetailsUri);
+            completeUrl = string.Concat(BaseUrl, GetEmployeeDetailsUri);
             if (filter != null)
             {
                 for (int i = 0; i < filter.name.Count; i++)
                 {
-                    if(filter.name[i]== employeeDetails.XRefCode)
+                    if(filter.name[i]=="EmployeeDetails.XRefCode")
                     {
-                        count=count++;
+                        count=++count;
                     }
                 }
                 if(count==0)
@@ -182,15 +157,22 @@ namespace HRNX.Connector.DayForce.Connector
                 }
                 for (int i = 0; i < filter.name.Count; i++)
                 {
-                   String Name = filter.name[i];
-                   String Value = filter.value[i];
-                    if (i == 0)
+                    Name = filter.name[i];
+                    Value = filter.value[i];
+                    if (filter.name[i] != "EmployeeDetails.XRefCode")
                     {
-                        filterUrl = "?";
+                        if (i == 0)
+                        {
+                            filterUrl = "?";
+                        }
                     }
                     if (i == (filter.name.Count - 1))
                     {
-                        if (filter.name[i] == "Employees.contextDate")
+                        if (filter.name[i] == "EmployeeDetails.XRefCode")
+                        {
+                            filterUrl = filter.value[i];
+                        }
+                        if (filter.name[i] == "EmployeeDetails.contextDate")
                         {
 
                             string line = filter.value[i];
@@ -202,12 +184,19 @@ namespace HRNX.Connector.DayForce.Connector
                         }
                         else
                         {
-                            filterUrl += Name + " = " + Value;
+                            if (filter.name[i] != "EmployeeDetails.XRefCode")
+                            {
+                                filterUrl += Name + " = " + Value;
+                            }
                         }
                     }
                     else
                     {
-                        if (filter.name[i] == "Employees.contextDate")
+                        if (filter.name[i] == "EmployeeDetails.XRefcode")
+                        {
+                            filterUrl = filter.value[i];
+                        }
+                        if (filter.name[i] == "EmployeeDetails.contextDate")
                         {
 
                             string line = filter.value[i];
@@ -219,18 +208,17 @@ namespace HRNX.Connector.DayForce.Connector
                         }
                         else
                         {
-                            filterUrl += Name + "=" + Value + "&";
+                            if (filter.name[i] != "EmployeeDetails.XRefcode")
+                            {
+                                filterUrl += Name + "=" + Value + "&";
+                            }
                         }
                     }
 
                 }
-                filterUrl = String.Concat(completeUrl, filterUrl);
-                filterUrl = filterUrl.Replace("Employees.", " ");
+                filterUrl = filterUrl.Replace("EmployeeDetails.", " ");
                 filterUrl = filterUrl.Replace(" ", "");
-             //   completeUrl = filterUrl;
-
-
-                 completeUrl = string.Concat(BaseUrl, GetEmployeeDetailsUri, filterUrl);
+                completeUrl = string.Concat(BaseUrl, GetEmployeeDetailsUri, filterUrl);
 
                 HttpWebResponse response = service.HttpRequest(_connectionInfo, completeUrl, HttpMethods.GET.ToString(), null);
 
@@ -244,7 +232,7 @@ namespace HRNX.Connector.DayForce.Connector
 
                     }
 
-                    employeeDetails = HRNX.Connector.DayForce.FlatAndHierarchicalConverter.EmployeeHierarchicalToFlatConverter.EmployeeDetailsHierarchicalToFlatConverter(employeeResponsedata);
+                    employeeDetails =EmployeeHierarchicalToFlatConverter.EmployeeDetailsHierarchicalToFlatConverter(employeeResponsedata);
 
                     employeeResponselist.Add(employeeDetails);
                 }
@@ -265,126 +253,9 @@ namespace HRNX.Connector.DayForce.Connector
 
         public string CreateEmployee(IDictionary<string, string> _connectionInfo, EmployeeCreateFlat employee)
         {
-            string completeUrl = string.Concat(BaseUrl, CreateEmployeeUri);
-            ServiceUtils service = new ServiceUtils();
-
-            EmployeeCreate employeeRequest = new EmployeeCreate();
-            employeeRequest.FirstName = employee.FirstName;
-            employeeRequest.LastName = employee.LastName;
-            employeeRequest.XRefCode = employee.XRefCode;
-            employeeRequest.BioExempt = employee.BioExempt;
-            employeeRequest.BirthDate = employee.BirthDate;
-            employeeRequest.Gender = employee.Gender;
-            employeeRequest.HireDate = employee.HireDate;
-            employeeRequest.PhotoExempt = employee.PhotoExempt;
-            employeeRequest.RequiresExitInterview = employee.RequiresExitInterview;
-            employeeRequest.SocialSecurityNumber = employee.SocialSecurityNumber;
-            employeeRequest.SendFirstTimeAccessEmail = employee.SendFirstTimeAccessEmail;
-            employeeRequest.FirstTimeAccessEmailSentCount = employee.FirstTimeAccessEmailSentCount;
-            employeeRequest.FirstTimeAccessVerificationAttempts = employee.FirstTimeAccessVerificationAttempts;
-            employeeRequest.Culture = new CultureFirst();
-            employeeRequest.Culture.XRefCode = employee.CultureFirstXRefCode;
-            employeeRequest.Addresses = new Addresses();
-            employeeRequest.Contacts = new Contacts();
-            employeeRequest.EmploymentStatuses = new Employmentstatuses();
-            employeeRequest.Roles = new Roles();
-            employeeRequest.WorkAssignments = new Workassignments();
-
-
-
-            if (!String.IsNullOrEmpty(employee.Address1) || !String.IsNullOrEmpty(employee.City) || !String.IsNullOrEmpty(employee.PostalCode) || employee.EffectiveStart == default(DateTime) || !String.IsNullOrEmpty(employee.CountryXRefCode) || !String.IsNullOrEmpty(employee.StateXRefCode) || !String.IsNullOrEmpty(employee.ContactinformationtypeXRefCode))
-            {
-
-                employeeRequest.Addresses.Items = new List<Item>();
-                Item item = new Item();
-                item.Address1 = employee.Address1;
-                item.City = employee.City;
-                item.PostalCode = employee.PostalCode;
-                item.EffectiveStart = employee.EffectiveStart;
-                item.Country = new Country();
-                item.Country.XRefCode = employee.CountryXRefCode;
-                item.State = new State();
-                item.State.XRefCode = employee.StateXRefCode;
-                item.ContactInformationType = new Contactinformationtype();
-                item.ContactInformationType.XRefCode = employee.ContactinformationtypeXRefCode;
-
-                employeeRequest.Addresses.Items.Add(item);
-
-            }
-            if (!String.IsNullOrEmpty(employee.Contactinformationtype1XRefCode) || !String.IsNullOrEmpty(employee.ContactNumber) || employee.Item1EffectiveStart == default(DateTime) || !String.IsNullOrEmpty(employee.Country1XRefCode) || !String.IsNullOrEmpty(employee.Contactinformationtype1XRefCode) || employee.ShowRejectedWarning == true || employee.IsForSystemCommunications == true || employee.IsPreferredContactMethod == true || employee.NumberOfVerificationRequests > 0)
-
-            {
-                employeeRequest.Contacts.Items = new List<Item1>();
-                Item1 item1 = new Item1();
-                item1.ContactInformationType = new Contactinformationtype1();
-                item1.ContactInformationType.XRefCode = employee.Contactinformationtype1XRefCode;
-                item1.ContactNumber = employee.ContactNumber;
-                item1.Country = new Country1();
-                item1.Country.XRefCode = employee.Country1XRefCode;
-                item1.EffectiveStart = employee.Item1EffectiveStart;
-                item1.IsForSystemCommunications = employee.IsForSystemCommunications;
-                item1.IsPreferredContactMethod = employee.IsPreferredContactMethod;
-                item1.NumberOfVerificationRequests = employee.NumberOfVerificationRequests;
-                item1.ShowRejectedWarning = employee.ShowRejectedWarning;
-                employeeRequest.Contacts.Items.Add(item1);
-
-            }
-            if (!String.IsNullOrEmpty(employee.EmploymentstatusXRefCode) || !String.IsNullOrEmpty(employee.PaytypeXRefCode) || employee.Item2EffectiveStart == default(DateTime) || !String.IsNullOrEmpty(employee.PaygroupXRefCode) || !String.IsNullOrEmpty(employee.PayclassXRefCode) || employee.CreateShiftRotationShift == true || !String.IsNullOrEmpty(employee.EmploymentstatusreasonXrefCode) || employee.BaseRate > 0)
-
-            {
-                employeeRequest.EmploymentStatuses.Items = new List<Item2>();
-                Item2 item2 = new Item2();
-                item2.EffectiveStart = employee.Item2EffectiveStart;
-                item2.EmploymentStatus = new Employmentstatus();
-                item2.EmploymentStatus.XRefCode = employee.EmploymentstatusXRefCode;
-                item2.PayClass = new Payclass();
-                item2.PayClass.XRefCode = employee.PayclassXRefCode;
-                item2.PayGroup = new Paygroup();
-                item2.PayGroup.XRefCode = employee.PaygroupXRefCode;
-                item2.PayType = new Paytype();
-                item2.PayType.XRefCode = employee.PaytypeXRefCode;
-                item2.CreateShiftRotationShift = employee.CreateShiftRotationShift;
-                item2.BaseRate = employee.BaseRate;
-                item2.EmploymentStatusReason = new Employmentstatusreason();
-                item2.EmploymentStatusReason.XrefCode = employee.EmploymentstatusreasonXrefCode;
-                employeeRequest.EmploymentStatuses.Items.Add(item2);
-
-            }
-            if (!String.IsNullOrEmpty(employee.RoleXRefCode) || employee.RolesEffectiveStart == default(DateTime) || employee.isDefault == true)
-
-            {
-                employeeRequest.Roles.Items = new List<Item3>();
-                Item3 item3 = new Item3();
-                item3.Role = new Role();
-                item3.Role.XRefCode = employee.RoleXRefCode;
-                item3.EffectiveStart = employee.RolesEffectiveStart;
-                item3.isDefault = employee.isDefault;
-                employeeRequest.Roles.Items.Add(item3);
-
-            }
-            if (!String.IsNullOrEmpty(employee.DepartmentXRefCode) || !String.IsNullOrEmpty(employee.JobXRefCode) || !String.IsNullOrEmpty(employee.LocationXRefCode) || employee.WorkassignmentsEffectiveStart == default(DateTime) || employee.IsPAPrimaryWorkSite == true || employee.IsPrimary == true || employee.IsVirtual == true || !String.IsNullOrEmpty(employee.Employmentstatusreason1XrefCode))
-
-            {
-
-                employeeRequest.WorkAssignments.Items = new List<Item4>();
-                Item4 item4 = new Item4();
-                item4.Position = new Position();
-                item4.Position.Department = new Department();
-                item4.Position.Job = new Job();
-                item4.Position.Department.XRefCode = employee.DepartmentXRefCode;
-                item4.Position.Job.XRefCode = employee.JobXRefCode;
-                item4.Location = new Location();
-                item4.Location.XRefCode = employee.LocationXRefCode;
-                item4.EffectiveStart = employee.WorkassignmentsEffectiveStart;
-                item4.EmploymentStatusReason = new Employmentstatusreason1();
-                item4.EmploymentStatusReason.XrefCode = employee.Employmentstatusreason1XrefCode;
-                item4.IsPAPrimaryWorkSite = employee.IsPAPrimaryWorkSite;
-                item4.IsPrimary = employee.IsPrimary;
-                item4.IsVirtual = employee.IsVirtual;
-
-                employeeRequest.WorkAssignments.Items.Add(item4);
-
-            }
+            completeUrl = string.Concat(BaseUrl, CreateEmployeeUri);
+            FlatToHierarchical flat = new FlatToHierarchical();
+            EmployeeCreate employeeRequest=flat.ConvertEmployeeFlatToHierarchical(employee);
 
             string employeeJsonContent = JsonConvert.SerializeObject(employeeRequest,
                  new JsonSerializerSettings
@@ -413,27 +284,11 @@ namespace HRNX.Connector.DayForce.Connector
                 else if ((response.StatusCode == HttpStatusCode.BadRequest))
                 {
 
-
-
-                    Stream receiveStream = response.GetResponseStream();
-                    var reader = new StreamReader(receiveStream);
-                    string text = reader.ReadToEnd();
-                    var newData = (JObject)JsonConvert.DeserializeObject(text);
-                    string textMessage = newData["message"].Value<string>();
                     throw new WebException("Request is malformed. Correct and resubmit.");
 
                 }
                 else if ((response.StatusCode == HttpStatusCode.InternalServerError))
                 {
-
-
-
-                    Stream receiveStream = response.GetResponseStream();
-                    var reader = new StreamReader(receiveStream);
-                    string text = reader.ReadToEnd();
-
-                    var newData = (JObject)JsonConvert.DeserializeObject(text);
-                    string textMessage = newData["message"].Value<string>();
                     throw new WebException("An Unexpected Server Error Occued.");
 
                 }

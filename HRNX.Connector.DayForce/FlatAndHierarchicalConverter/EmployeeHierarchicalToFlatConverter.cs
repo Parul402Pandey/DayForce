@@ -9,11 +9,13 @@ namespace HRNX.Connector.DayForce.FlatAndHierarchicalConverter
 {
     public class EmployeeHierarchicalToFlatConverter
     {
-
+        /// <summary>
+        /// convert employee data from hierachical to flat model
+        /// </summary>
+        /// <param name="employeeResponse"></param>
+        /// <returns></returns>
         public static List<Employees> employeeHierarchicalToFlatConverter(EmployeeResponse employeeResponse)
         {
-
-
             List<Employees> employeeEntity = new List<Employees>();
             Employees employees = new Employees();
 
@@ -24,7 +26,6 @@ namespace HRNX.Connector.DayForce.FlatAndHierarchicalConverter
                 {
 
                     employees = new Employees();
-
                     employees.XRefCode = employee.XRefCode;
                     employeeEntity.Add(employees);
 
@@ -76,7 +77,6 @@ namespace HRNX.Connector.DayForce.FlatAndHierarchicalConverter
                 employeeEntity.FirstName = employeeDetailsResponse.Data.FirstName;
                 employeeEntity.LastName = employeeDetailsResponse.Data.LastName;
             }
-
 
             return employeeEntity;
         }
